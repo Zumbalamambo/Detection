@@ -226,21 +226,24 @@ class YOLO_TF:
 		return None
 
 	# customized method, need to run after detection
-	def extract_person_from_file(self, filename, output_person_filename):
-		if self.disp_console: print 'Extract person from ' + filename
+	def extract_person_from_file(self,filename,output_person_filename):
+		if self.disp_console : print 'Extract person from ' + filename
 		img = cv2.imread(filename)
-		results = self.result
-		for i in range(len(results)):
-			if results[i][0] == 'person':
-				x = int(results[i][1])
-				y = int(results[i][2])
-				w = int(results[i][3]) // 2
-				h = int(results[i][4]) // 2
-				if self.disp_console: print '    class : ' + results[i][0] + ' , [x,y,w,h]=[' + str(x) + ',' + str(
-					y) + ',' + str(int(results[i][3])) + ',' + str(int(results[i][4])) + '], Confidence = ' + str(
-					results[i][5])
-				crop_img = img[(y - h):(y + h), (x - w):(x + w)]
-				cv2.imwrite(output_person_filename, crop_img)
+		self.extract_person_from_img(img, output_person_filename=output_person_filename)
+
+	def extract_person_from_img(self, img, output_person_filename):
+		results_person = [result for result in self.result if result[0] == 'person']
+		h_max, w_max = img.shape[0:2]
+		for i in range(len(results_person)):
+			x = int(results_person[i][1])
+			y = int(results_person[i][2])
+			w = int(results_person[i][3]) // 2
+			h = int(results_person[i][4]) // 2
+			if self.disp_console: print '    class : ' + results_person[i][0] + ' , [x,y,w,h]=[' + str(x) + ',' + str(
+				y) + ',' + str(int(results_person[i][3])) + ',' + str(int(results_person[i][4])) + '], Confidence = ' + str(
+				results_person[i][5])
+			crop_img = img[max(0, (y - h)):min(h_max, (y + h)), max(0, (x - w)):min(w_max, (x + w))]
+			cv2.imwrite(output_person_filename + '_{:02d}.jpg'.format(i), crop_img)
 	
 			
 
