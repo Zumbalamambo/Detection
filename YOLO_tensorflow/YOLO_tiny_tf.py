@@ -225,6 +225,22 @@ class YOLO_TF:
 	def training(self): #TODO add training function!
 		return None
 
+	# customized method, need to run after detection
+	def extract_person_from_file(self, filename, output_person_filename):
+		if self.disp_console: print 'Extract person from ' + filename
+		img = cv2.imread(filename)
+		results = self.result
+		for i in range(len(results)):
+			if results[i][0] == 'person':
+				x = int(results[i][1])
+				y = int(results[i][2])
+				w = int(results[i][3]) // 2
+				h = int(results[i][4]) // 2
+				if self.disp_console: print '    class : ' + results[i][0] + ' , [x,y,w,h]=[' + str(x) + ',' + str(
+					y) + ',' + str(int(results[i][3])) + ',' + str(int(results[i][4])) + '], Confidence = ' + str(
+					results[i][5])
+				crop_img = img[(y - h):(y + h), (x - w):(x + w)]
+				cv2.imwrite(output_person_filename, crop_img)
 	
 			
 
