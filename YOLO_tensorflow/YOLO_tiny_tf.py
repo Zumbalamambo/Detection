@@ -113,9 +113,9 @@ class YOLO_TF:
 		in_dict = {self.x: inputs}
 		net_output = self.sess.run(self.fc_19,feed_dict=in_dict)
 		self.result = self.interpret_output(net_output[0])
-		self.show_results(img,self.result)
+		# self.show_results(img,self.result)
 		strtime = str(time.time()-s)
-		if self.disp_console : print 'Elapsed time : ' + strtime + ' secs' + '\n'
+		if self.disp_console : print 'Elapsed time : ' + strtime + ' secs'
 
 	def detect_from_file(self,filename):
 		if self.disp_console : print 'Detect from ' + filename
@@ -231,19 +231,36 @@ class YOLO_TF:
 		img = cv2.imread(filename)
 		self.extract_person_from_img(img, output_person_filename=output_person_filename)
 
-	def extract_person_from_img(self, img, output_person_filename):
+	def extract_person_from_img(self, img, output_person_filename, nb_person_w_confid=0, person_min_dimen=100):
 		results_person = [result for result in self.result if result[0] == 'person']
+		# sort according to confidence @ [5], reverse -> from large to small
+		results_person = sorted(results_person, key=lambda tup: tup[5], reverse=True)
 		h_max, w_max = img.shape[0:2]
-		for i in range(len(results_person)):
-			x = int(results_person[i][1])
-			y = int(results_person[i][2])
-			w = int(results_person[i][3]) // 2
-			h = int(results_person[i][4]) // 2
-			if self.disp_console: print '    class : ' + results_person[i][0] + ' , [x,y,w,h]=[' + str(x) + ',' + str(
-				y) + ',' + str(int(results_person[i][3])) + ',' + str(int(results_person[i][4])) + '], Confidence = ' + str(
-				results_person[i][5])
-			crop_img = img[max(0, (y - h)):min(h_max, (y + h)), max(0, (x - w)):min(w_max, (x + w))]
-			cv2.imwrite(output_person_filename + '_{:02d}.jpg'.format(i), crop_img)
+		if nb_person_w_confid > 0 and len(results_person) > 0:
+			for i in range(min(nb_person_w_confid, len(results_person))):
+				x = int(results_person[i][1])
+				y = int(results_person[i][2])
+				w = int(results_person[i][3]) // 2
+				h = int(results_person[i][4]) // 2
+				if w >= (person_min_dimen/2) and h >= (person_min_dimen/2):   # limit on person size > e.g. 100x100 pixel^2
+					if self.disp_console: print '    cut class : ' + results_person[i][0] + ' , [x,y,w,h]=[' + str(x) + ',' + str(
+						y) + ',' + str(int(results_person[i][3])) + ',' + str(int(results_person[i][4])) + '], Confidence = ' + str(
+						results_person[i][5])
+					crop_img = img[max(0, (y - h)):min(h_max, (y + h)), max(0, (x - w)):min(w_max, (x + w))]
+					cv2.imwrite(output_person_filename + '_{:02d}.jpg'.format(i), crop_img)
+		elif nb_person_w_confid == 0:	# extract all detected
+			for i in range(len(results_person)):
+				x = int(results_person[i][1])
+				y = int(results_person[i][2])
+				w = int(results_person[i][3]) // 2
+				h = int(results_person[i][4]) // 2
+				if w >= (person_min_dimen/2) and h >=(person_min_dimen/2):   # limit on person size > e.g. 100x100 pixel^2
+					if self.disp_console: print '    cut class : ' + results_person[i][0] + ' , [x,y,w,h]=[' + str(x) + ',' + str(
+						y) + ',' + str(int(results_person[i][3])) + ',' + str(int(results_person[i][4])) + '], Confidence = ' + str(
+						results_person[i][5])
+					crop_img = img[max(0, (y - h)):min(h_max, (y + h)), max(0, (x - w)):min(w_max, (x + w))]
+					cv2.imwrite(output_person_filename + '_{:02d}.jpg'.format(i), crop_img)
+		if self.disp_console: print '\n'
 	
 			
 
