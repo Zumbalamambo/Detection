@@ -15,7 +15,7 @@ class LearningRateAnnealing(Callback):
         self.annealing_factor = annealing_factor
 
     def on_epoch_begin(self, epoch, logs={}):
-        old_lr = self.model.optimizer.lr.get_value()
+        old_lr = K.get_value(self.model.optimizer.lr)
         if epoch > 1 and (epoch % self.nb_epoch == 0):
             new_lr = self.annealing_factor * old_lr
             print 'lr={}'.format(new_lr)    # show how lr evolves
