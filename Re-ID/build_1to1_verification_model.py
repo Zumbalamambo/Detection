@@ -6,11 +6,11 @@ from keras.engine.topology import get_source_inputs
 from keras.optimizers import SGD
 
 
-def build_1to1_verification_model(nb_node_hidden_layer = 256,
-                                  nb_hidden_layer = 1,
-                                  is_bn_applied = True,
-                                  is_do_applied = True,
-                                  l2_regularizer = 1e-1):
+def build_1to1_verification_vgg16_model(nb_node_hidden_layer = 256,
+                                        nb_hidden_layer = 1,
+                                        is_bn_applied = True,
+                                        is_do_applied = True,
+                                        l2_regularizer = 1e-1):
     # default image size
     img_height = 224
     img_width = 224
@@ -46,19 +46,19 @@ def build_1to1_verification_model(nb_node_hidden_layer = 256,
 
     return model
 
-def build_compiled_1to1_verification_model(nb_node_hidden_layer = 256,
-                                           nb_hidden_layer = 1,
-                                           is_bn_applied = True,
-                                           is_do_applied = True,
-                                           l2_regularizer = 1e-1,
-                                           loss_function = 'binary_crossentropy',
-                                           optimizer = 'adadelta',
-                                           metric_list = ['accuracy']):
-    model = build_1to1_verification_model(nb_node_hidden_layer = nb_node_hidden_layer,
-                                          nb_hidden_layer = nb_hidden_layer,
-                                          is_bn_applied = is_bn_applied,
-                                          is_do_applied = is_do_applied,
-                                          l2_regularizer = l2_regularizer)
+def build_compiled_1to1_verification_vgg16_model(nb_node_hidden_layer = 256,
+                                                 nb_hidden_layer = 1,
+                                                 is_bn_applied = True,
+                                                 is_do_applied = True,
+                                                 l2_regularizer = 1e-1,
+                                                 loss_function = 'binary_crossentropy',
+                                                 optimizer = 'adadelta',
+                                                 metric_list = ['accuracy']):
+    model = build_1to1_verification_vgg16_model(nb_node_hidden_layer = nb_node_hidden_layer,
+                                                nb_hidden_layer = nb_hidden_layer,
+                                                is_bn_applied = is_bn_applied,
+                                                is_do_applied = is_do_applied,
+                                                l2_regularizer = l2_regularizer)
     model.compile(loss=loss_function,
                   optimizer=optimizer,
                   metrics=metric_list)
@@ -75,14 +75,14 @@ if __name__ == '__main__':
     momentum = 0.9
     optimizer = SGD(lr=learning_rate, momentum=momentum)
     metrics = ['accuracy']   # loss is the default metric
-    model = build_compiled_1to1_verification_model(nb_node_hidden_layer = nb_node,
-                                                   nb_hidden_layer = nb_layer,
-                                                   is_bn_applied = is_bn,
-                                                   is_do_applied = is_do,
-                                                   l2_regularizer = l2_regular,
-                                                   loss_function = loss_func,
-                                                   optimizer = optimizer,
-                                                   metric_list = metrics)
+    model = build_compiled_1to1_verification_vgg16_model(nb_node_hidden_layer = nb_node,
+                                                         nb_hidden_layer = nb_layer,
+                                                         is_bn_applied = is_bn,
+                                                         is_do_applied = is_do,
+                                                         l2_regularizer = l2_regular,
+                                                         loss_function = loss_func,
+                                                         optimizer = optimizer,
+                                                         metric_list = metrics)
     model.summary()
     print model.layers.__len__()
     print model.layers[15].trainable

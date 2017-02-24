@@ -1,4 +1,6 @@
-from build_1to1_verification_model import build_compiled_1to1_verification_model
+from build_1to1_verification_model import build_compiled_1to1_verification_vgg16_model
+
+import tensorflow as tf
 
 from keras.optimizers import SGD
 from keras.preprocessing.image import ImageDataGenerator
@@ -7,23 +9,27 @@ from utils.lr_annealing import LearningRateAnnealing
 import numpy as np
 
 if __name__ == '__main__':
+    # limit memory usage, note this may limit the speed
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)  # 0.333 -> 2929MB, 3.45GB required
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+
     # parameters
     img_height = 224
     img_width = 224
     batch_size = 32
     nb_node = 256
     nb_layer = 1
-    is_bn = True
+    is_bn = False
     is_do = True
     l2_regular = 1e+0
     loss_func = 'binary_crossentropy'
-    learning_rate = 1e-3
+    learning_rate = 1e-2
     momentum = 0.9
     optimizer = SGD(lr=learning_rate, momentum=momentum)
     metrics = ['accuracy']  # loss is the default metric
 
-    nb_ep = 36      # ~14 hours
-    nb_anneal_ep = 12   # 3 changes for 36, 1e-3 -4 and -5
+    nb_ep = 15      # ~14 hours
+    nb_anneal_ep = 5   # 3 changes for 36, 1e-3 -4 and -5
     annealing_factor = 0.1
 
     nb_train_sample = 112831 + 42235    # salesperson + customer
@@ -48,14 +54,14 @@ if __name__ == '__main__':
                                                         class_mode='binary')
 
     # build model
-    model = build_compiled_1to1_verification_model(nb_node_hidden_layer = nb_node,
-                                                   nb_hidden_layer = nb_layer,
-                                                   is_bn_applied = is_bn,
-                                                   is_do_applied = is_do,
-                                                   l2_regularizer = l2_regular,
-                                                   loss_function = loss_func,
-                                                   optimizer = optimizer,
-                                                   metric_list = metrics)
+    model = build_compiled_1to1_verification_vgg16_model(nb_node_hidden_layer = nb_node,
+                                                         nb_hidden_layer = nb_layer,
+                                                         is_bn_applied = is_bn,
+                                                         is_do_applied = is_do,
+                                                         l2_regularizer = l2_regular,
+                                                         loss_function = loss_func,
+                                                         optimizer = optimizer,
+                                                         metric_list = metrics)
     anneal_schedule = LearningRateAnnealing(nb_anneal_ep, annealing_factor)
 
     # train
@@ -70,7 +76,30 @@ if __name__ == '__main__':
     record = np.column_stack((np.array(history.epoch)+1,
                               history.history['loss'],
                               history.history['val_loss'],
-                              history.history['accuracy'],
-                              history.history['val_accuracy']))
-    np.savetxt('saver/convergence.csv', record, delimiter=',')
-    model.save_weights('saver/weights.h5', overwrite=False)
+                              history.history['acc'],
+                              history.history['val_acc']))
+    np.savetxt('saver/convergence_{}x{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.csv'
+               .format(img_height,
+                       img_width,
+                       nb_node,
+                       1 if is_bn else 0,
+                       1 if is_do else 0,
+                       l2_regular,
+                       learning_rate,
+                       nb_ep,
+                       nb_anneal_ep,
+                       annealing_factor
+                       ), record, delimiter=',')
+    model.save_weights('saver/weights_{}x{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.h5'
+                       .format(img_height,
+                               img_width,
+                               nb_node,
+                               1 if is_bn else 0,
+                               1 if is_do else 0,
+                               l2_regular,
+                               learning_rate,
+                               nb_ep,
+                               nb_anneal_ep,
+                               annealing_factor
+                               ), overwrite=False)
+
