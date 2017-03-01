@@ -18,9 +18,9 @@ if __name__ == '__main__':
     img_width = 224
     batch_size = 32
     nb_node = 256
-    nb_layer = 1
-    is_bn = False
-    is_do = True
+    nb_layer = 2
+    is_bn = True
+    is_do = False
     l2_regular = 1e+0
     loss_func = 'binary_crossentropy'
     learning_rate = 1e-2
@@ -28,8 +28,8 @@ if __name__ == '__main__':
     optimizer = SGD(lr=learning_rate, momentum=momentum)
     metrics = ['accuracy']  # loss is the default metric
 
-    nb_ep = 15      # ~14 hours
-    nb_anneal_ep = 5   # 3 changes for 36, 1e-3 -4 and -5
+    nb_ep = 15
+    nb_anneal_ep = 5
     annealing_factor = 0.1
 
     nb_train_sample = 112831 + 42235    # salesperson + customer
@@ -78,9 +78,10 @@ if __name__ == '__main__':
                               history.history['val_loss'],
                               history.history['acc'],
                               history.history['val_acc']))
-    np.savetxt('saver/convergence_{}x{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.csv'
+    np.savetxt('saver/convergence_{}x{}_hl{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.csv'
                .format(img_height,
                        img_width,
+                       nb_layer,
                        nb_node,
                        1 if is_bn else 0,
                        1 if is_do else 0,
@@ -90,9 +91,10 @@ if __name__ == '__main__':
                        nb_anneal_ep,
                        annealing_factor
                        ), record, delimiter=',')
-    model.save_weights('saver/weights_{}x{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.h5'
+    model.save_weights('saver/weights_{}x{}_hl{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.h5'
                        .format(img_height,
                                img_width,
+                               nb_layer,
                                nb_node,
                                1 if is_bn else 0,
                                1 if is_do else 0,
