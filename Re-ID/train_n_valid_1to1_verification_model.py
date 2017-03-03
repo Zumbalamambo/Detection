@@ -1,4 +1,4 @@
-from build_1to1_verification_model import build_compiled_1to1_verification_vgg16_model
+from build_1to1_verification_model import build_compiled_1to1_verification_resnet50_model
 
 import tensorflow as tf
 
@@ -10,7 +10,7 @@ import numpy as np
 
 if __name__ == '__main__':
     # limit memory usage, note this may limit the speed
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)  # 0.333 -> 2929MB, 3.45GB required
+    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)  # 0.333 -> 2929MB, 3.45GB required
     sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
     # parameters
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     img_width = 224
     batch_size = 32
     nb_node = 256
-    nb_layer = 2
+    nb_layer = 1
     is_bn = True
     is_do = False
     l2_regular = 1e+0
@@ -54,14 +54,16 @@ if __name__ == '__main__':
                                                         class_mode='binary')
 
     # build model
-    model = build_compiled_1to1_verification_vgg16_model(nb_node_hidden_layer = nb_node,
-                                                         nb_hidden_layer = nb_layer,
-                                                         is_bn_applied = is_bn,
-                                                         is_do_applied = is_do,
-                                                         l2_regularizer = l2_regular,
-                                                         loss_function = loss_func,
-                                                         optimizer = optimizer,
-                                                         metric_list = metrics)
+    model = build_compiled_1to1_verification_resnet50_model(nb_node_hidden_layer = nb_node,
+                                                            nb_hidden_layer = nb_layer,
+                                                            is_bn_applied = is_bn,
+                                                            is_do_applied = is_do,
+                                                            l2_regularizer = l2_regular,
+                                                            loss_function = loss_func,
+                                                            optimizer = optimizer,
+                                                            metric_list = metrics)
+    model.summary()
+
     anneal_schedule = LearningRateAnnealing(nb_anneal_ep, annealing_factor)
 
     # train
