@@ -14,11 +14,13 @@ if __name__ == '__main__':
     sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
     # parameters
+    stem_cnn = 'resnet50'   # resnet50 or vgg16
     img_height = 224
     img_width = 224
     batch_size = 32
     nb_node = 256
     nb_layer = 1
+    is_avg_pool = True      # applicable when with ResNet50
     is_bn = True
     is_do = False
     l2_regular = 1e+0
@@ -56,6 +58,7 @@ if __name__ == '__main__':
     # build model
     model = build_compiled_1to1_verification_resnet50_model(nb_node_hidden_layer = nb_node,
                                                             nb_hidden_layer = nb_layer,
+                                                            is_avg_pool_applied = is_avg_pool,
                                                             is_bn_applied = is_bn,
                                                             is_do_applied = is_do,
                                                             l2_regularizer = l2_regular,
@@ -80,8 +83,9 @@ if __name__ == '__main__':
                               history.history['val_loss'],
                               history.history['acc'],
                               history.history['val_acc']))
-    np.savetxt('saver/convergence_{}x{}_hl{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.csv'
-               .format(img_height,
+    np.savetxt('saver/convergence_stem{}_{}x{}_hl{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.csv'
+               .format(stem_cnn,
+                       img_height,
                        img_width,
                        nb_layer,
                        nb_node,
@@ -93,8 +97,9 @@ if __name__ == '__main__':
                        nb_anneal_ep,
                        annealing_factor
                        ), record, delimiter=',')
-    model.save_weights('saver/weights_{}x{}_hl{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.h5'
-                       .format(img_height,
+    model.save_weights('saver/weights_stem{}_{}x{}_hl{}_hn{}_imagenet_bn{}_do{}_l2reg{:.0e}_lr{:.0e}_ne{}_nae{}_af{}.h5'
+                       .format(stem_cnn,
+                               img_height,
                                img_width,
                                nb_layer,
                                nb_node,

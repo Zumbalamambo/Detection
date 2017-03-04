@@ -68,6 +68,7 @@ def build_compiled_1to1_verification_vgg16_model(nb_node_hidden_layer = 256,
 
 def build_1to1_verification_resnet50_model(nb_node_hidden_layer = 256,
                                            nb_hidden_layer = 1,
+                                           is_avg_pool_applied = False,
                                            is_bn_applied = True,
                                            is_do_applied = True,
                                            l2_regularizer = 1e-1):
@@ -79,11 +80,12 @@ def build_1to1_verification_resnet50_model(nb_node_hidden_layer = 256,
 
     print 'build resnet50 with imagenet weights'
     resnet50_notop = ResNet50(input_tensor=input_tensor, include_top=False, weights='imagenet')
-    # discard the last avg pooling layer
-    resnet50_notop.layers.pop()
-    resnet50_notop.outputs = [resnet50_notop.layers[-1].output]
-    resnet50_notop.output_layers = [resnet50_notop.layers[-1]]
-    resnet50_notop.layers[-1].outbound_nodes = []
+    if not is_avg_pool_applied:
+        # discard the last avg pooling layer
+        resnet50_notop.layers.pop()
+        resnet50_notop.outputs = [resnet50_notop.layers[-1].output]
+        resnet50_notop.output_layers = [resnet50_notop.layers[-1]]
+        resnet50_notop.layers[-1].outbound_nodes = []
 
     # make all layers un-trainable
     for layer in resnet50_notop.layers:
@@ -115,6 +117,7 @@ def build_1to1_verification_resnet50_model(nb_node_hidden_layer = 256,
 
 def build_compiled_1to1_verification_resnet50_model(nb_node_hidden_layer = 256,
                                                     nb_hidden_layer = 1,
+                                                    is_avg_pool_applied = False,
                                                     is_bn_applied = True,
                                                     is_do_applied = True,
                                                     l2_regularizer = 1e-1,
@@ -123,6 +126,7 @@ def build_compiled_1to1_verification_resnet50_model(nb_node_hidden_layer = 256,
                                                     metric_list = ['accuracy']):
     model = build_1to1_verification_resnet50_model(nb_node_hidden_layer = nb_node_hidden_layer,
                                                    nb_hidden_layer = nb_hidden_layer,
+                                                   is_avg_pool_applied=is_avg_pool_applied,
                                                    is_bn_applied = is_bn_applied,
                                                    is_do_applied = is_do_applied,
                                                    l2_regularizer = l2_regularizer)
