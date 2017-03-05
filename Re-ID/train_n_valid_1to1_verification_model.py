@@ -19,7 +19,7 @@ if __name__ == '__main__':
     img_width = 224
     batch_size = 32
     nb_node = 256
-    nb_layer = 1
+    nb_layer = 2
     is_avg_pool = True      # applicable when with ResNet50
     is_bn = True
     is_do = False
