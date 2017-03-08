@@ -72,9 +72,10 @@ class YOLO_TF:
         self.conv_26 = self.conv_layer(26,self.conv_25,1024,3,2)
         self.conv_27 = self.conv_layer(27,self.conv_26,1024,3,1)
         self.conv_28 = self.conv_layer(28,self.conv_27,1024,3,1)
+        # subtle difference from the paper, add 512 fc layer, the model can not be applied to others
         self.fc_29 = self.fc_layer(29,self.conv_28,512,flat=True,linear=False)
         self.fc_30 = self.fc_layer(30,self.fc_29,4096,flat=False,linear=False)
-        #skip dropout_31
+        #skip dropout_31 for testing
         self.fc_32 = self.fc_layer(32,self.fc_30,1470,flat=False,linear=True)
         self.sess = tf.Session()
         self.sess.run(tf.initialize_all_variables())
