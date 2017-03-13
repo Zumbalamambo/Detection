@@ -493,12 +493,13 @@ def ssd_net(inputs,
         end_point = 'block10'
         with tf.variable_scope(end_point):
             net = slim.conv2d(net, 128, [1, 1], scope='conv1x1')
-            net = slim.conv2d(net, 256, [3, 3], scope='conv3x3', padding='VALID')
+            net = custom_layers.pad2d(net, pad=(1, 1))
+            net = slim.conv2d(net, 256, [3, 3], stride=2, scope='conv3x3', padding='VALID')
         end_points[end_point] = net
         end_point = 'block11'
         with tf.variable_scope(end_point):
             net = slim.conv2d(net, 128, [1, 1], scope='conv1x1')
-            net = slim.conv2d(net, 256, [3, 3], scope='conv3x3', padding='VALID')
+            net = slim.conv2d(net, 256, [3, 3], stride=2, scope='conv3x3', padding='VALID')
         end_points[end_point] = net
 
         # Prediction and localisations layers.

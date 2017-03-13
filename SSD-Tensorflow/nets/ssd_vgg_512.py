@@ -1,4 +1,5 @@
 # Copyright 2016 Paul Balanca. All Rights Reserved.
+# Copyright 2016 Paul Balanca. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -435,7 +436,7 @@ def ssd_net(inputs,
         with tf.variable_scope(end_point):
             net = slim.conv2d(net, 128, [1, 1], scope='conv1x1')
             net = custom_layers.pad2d(net, pad=(1, 1))
-            net = slim.conv2d(net, 256, [4, 4], scope='conv4x4', padding='VALID')
+            net = slim.conv2d(net, 256, [4, 4], stride=2, scope='conv4x4', padding='VALID')
             # Fix padding to match Caffe version (pad=1).
             # pad_shape = [(i-j) for i, j in zip(layer_shape(net), [0, 1, 1, 0])]
             # net = tf.slice(net, [0, 0, 0, 0], pad_shape, name='caffe_pad')
