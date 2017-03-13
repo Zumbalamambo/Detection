@@ -11,7 +11,8 @@ slim = tf.contrib.slim
 import sys
 sys.path.append('../')
 
-from nets import ssd_vgg_300, ssd_common, np_methods
+from nets import ssd_common, np_methods
+from nets import ssd_vgg_300
 from preprocessing import ssd_vgg_preprocessing
 from notebooks import visualization
 
