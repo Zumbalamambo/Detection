@@ -51,12 +51,14 @@ def process_image(img, select_threshold=0.5, nms_threshold=.45, net_shape=(300, 
     return rclasses, rscores, rbboxes
 
 # video clip
+date = '20170304'   # sat
+# date = '20170310'   # fri
 n_frame_per_min = 510
 pesn_cntr_list = []
 for hour in np.arange(10,22):
     for minute in np.arange(60):
-        print("loading ../datasets/TongYing/20170310/{:02d}/{:02d}.mp4".format(hour, minute))
-        cap = cv2.VideoCapture('../datasets/TongYing/20170310/{:02d}/{:02d}.mp4'.format(hour, minute))
+        print("loading ../datasets/TongYing/{}/{:02d}/{:02d}.mp4".format(date, hour, minute))
+        cap = cv2.VideoCapture('../datasets/TongYing/{}/{:02d}/{:02d}.mp4'.format(date, hour, minute))
 
         pesn_cntr_list_per_min = []
         while (cap.isOpened()):
@@ -85,4 +87,4 @@ for hour in np.arange(10,22):
 cap.release()
 cv2.destroyAllWindows()
 
-np.savetxt('outputs/person_counter.txt', np.array(pesn_cntr_list), fmt='%d', delimiter=',')
+np.savetxt('outputs/person_counter_{}.txt'.format(date), np.array(pesn_cntr_list), fmt='%d', delimiter=',')
