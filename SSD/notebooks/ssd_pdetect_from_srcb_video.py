@@ -1,6 +1,9 @@
 import tensorflow as tf
 import cv2
 
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.1333)
+sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+
 slim = tf.contrib.slim
 
 import sys
@@ -26,7 +29,7 @@ ssd_net = ssd_vgg_512.SSDNet()
 with slim.arg_scope(ssd_net.arg_scope(data_format=data_format)):
     predictions, localisations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
 
-ckpt_filename = '../checkpoints/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt'
+ckpt_filename = './checkpoints/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt'
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 saver.restore(sess, ckpt_filename)
@@ -65,7 +68,7 @@ def bboxes_draw_on_img(img, classes, scores, bboxes, color, thickness=2):
         cv2.putText(img, s, p1[::-1], cv2.FONT_HERSHEY_DUPLEX, 0.4, color, 1)
 
 # read video clip
-video_file = '../demo/1_er_1920x960.MP4'
+video_file = './demo/1_er_1920x960.MP4'
 print("loading {}".format(video_file))
 cap = cv2.VideoCapture(video_file)
 
@@ -75,9 +78,12 @@ color = (0, 69, 255)    # BGR, orange red
 # video saver
 # fourcc = cv2.VideoWriter_fourcc(*'XVID')
 output_shape = (480, 960)
+output_filepath = './videos/output.mp4'
 # const char* filename, int fourcc, double fps, CvSize frame_size, int is_color=1 (gray or color)
-out = cv2.VideoWriter('../videos/output.mp4', -1, 40.0, output_shape[::-1])     # fps = 40 faster
+out = cv2.VideoWriter(output_filepath, -1, 40.0, output_shape[::-1], True)
 
+frame_counter = 0
+frame_limit = 100
 while (cap.isOpened()):
     ret, frame = cap.read()
     if ret:
@@ -86,7 +92,7 @@ while (cap.isOpened()):
         start = time.time()
         rclasses, rscores, rbboxes = process_image(img, net_shape=net_shape)
         end = time.time()
-        print('time elapsed to process one {} img: {}'.format(net_shape, end-start))
+        print('Frame {} time elapsed to process one {} img: {}'.format(frame_counter, net_shape, end-start))
         person_select_indicator = (rclasses == 15)
         rclasses = rclasses[person_select_indicator]
         rscores = rscores[person_select_indicator]
@@ -95,9 +101,12 @@ while (cap.isOpened()):
         # save
         img = cv2.resize(img, output_shape[::-1], interpolation=cv2.INTER_CUBIC)
         out.write(img)
+        frame_counter += 1
+	if frame_counter >= frame_limit:
+            break
     else:
         break
 
-cap.release()
 out.release()
+cap.release()
 cv2.destroyAllWindows()
