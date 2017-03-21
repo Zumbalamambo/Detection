@@ -11,10 +11,10 @@ slim = tf.contrib.slim
 import sys
 sys.path.append('../')
 
-from nets import ssd_common, np_methods
-from nets import ssd_vgg_300
-from preprocessing import ssd_vgg_preprocessing
-from notebooks import visualization
+from SSD.nets import ssd_common, np_methods
+from SSD.nets import ssd_vgg_300
+from SSD.preprocessing import ssd_vgg_preprocessing
+from SSD.notebooks import visualization
 
 # TensorFlow session: grow memory when needed. TF, DO NOT USE ALL MY GPU MEMORY!!!
 gpu_options = tf.GPUOptions(allow_growth=True)
