@@ -1,7 +1,7 @@
 import tensorflow as tf
 import cv2
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3333)
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.3)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
 slim = tf.contrib.slim
@@ -70,8 +70,8 @@ def bboxes_draw_on_img(img, classes, scores, bboxes, color, thickness=2):
 
 # read video clip
 # video_file = './demo/1_er_1920x960.MP4'
-# video_file = '../demo/b.webm'
-video_file = '../demo/TY_20170311_18_30_front.mp4'
+video_file = '../demo/b.webm'
+# video_file = '../demo/TY_20170311_18_30_front.mp4'
 print("loading {}".format(video_file))
 cap = cv2.VideoCapture(video_file)
 
