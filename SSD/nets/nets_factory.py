@@ -25,7 +25,7 @@ import tensorflow as tf
 from nets import vgg
 # from nets import xception
 
-from SSD.nets import ssd_vgg_300
+from nets import ssd_vgg_300
 from nets import ssd_vgg_512
 
 slim = tf.contrib.slim
