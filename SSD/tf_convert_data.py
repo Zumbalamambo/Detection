@@ -58,3 +58,15 @@ def main(_):
 if __name__ == '__main__':
     tf.app.run()
 
+    # # Option 1: 17125 images
+    # --dataset_name=pascalvoc
+    # --dataset_dir=/home/bsl/data/VOCdevkit/VOC2012/
+    # --output_name=voc_2012_train
+    # --output_dir=./tfrecords
+
+    # # Option 2: 9963 images
+    # --dataset_name=pascalvoc
+    # --dataset_dir=/home/bsl/data/VOCdevkit/VOC2007/
+    # --output_name=voc_2007_train
+    # --output_dir=./tfrecords
+

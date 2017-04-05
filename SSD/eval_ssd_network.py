@@ -344,3 +344,11 @@ def main(_):
 
 if __name__ == '__main__':
     tf.app.run()
+
+    # --eval_dir=./logs/
+    # --dataset_dir=./tfrecords
+    # --dataset_name=pascalvoc_2007
+    # --dataset_split_name=test
+    # --model_name=ssd_300_vgg
+    # --checkpoint_path=./checkpoints/VGG_VOC0712_SSD_300x300_ft_iter_120000.ckpt
+    # --batch_size=1

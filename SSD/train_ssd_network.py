@@ -191,7 +191,7 @@ def main(_):
             num_replicas=1,
             num_ps_tasks=0)
         # Create global_step.
-        with tf.device(deploy_config.variables_device()):
+        with tf.device(deploy_config.variables_device()):   # device CPU:0
             global_step = slim.create_global_step()
 
         # Select the dataset.
@@ -328,7 +328,7 @@ def main(_):
             update_ops.append(variable_averages.apply(moving_average_variables))
 
         # Variables to train.
-        variables_to_train = tf_utils.get_variables_to_train(FLAGS)
+        variables_to_train = tf_utils.get_variables_to_train(FLAGS)     # totally 79 layers
 
         # and returns a train_tensor and summary_op
         total_loss, clones_gradients = model_deploy.optimize_clones(
@@ -380,3 +380,33 @@ def main(_):
 
 if __name__ == '__main__':
     tf.app.run()
+
+# #  Option 1:
+# --train_dir=${TRAIN_DIR}
+# --dataset_dir=${DATASET_DIR}
+# --dataset_name=pascalvoc_2012
+# --dataset_split_name=train
+# --model_name=ssd_300_vgg
+# --checkpoint_path=${CHECKPOINT_PATH}
+# --save_summaries_secs=60
+# --save_interval_secs=600
+# --weight_decay=0.0005
+# --optimizer=adam
+# --learning_rate=0.001
+# --batch_size=32
+
+# #  Option 2:
+# --train_dir=${TRAIN_DIR}
+# --dataset_dir=${DATASET_DIR}
+# --dataset_name=pascalvoc_2007
+# --dataset_split_name=train
+# --model_name=ssd_300_vgg
+# --checkpoint_path=${CHECKPOINT_PATH}
+# --checkpoint_model_scope=vgg_16
+# --checkpoint_exclude_scopes=ssd_300_vgg/conv6,ssd_300_vgg/conv7,ssd_300_vgg/block8,ssd_300_vgg/block9,ssd_300_vgg/block10,ssd_300_vgg/block11,ssd_300_vgg/block4_box,ssd_300_vgg/block7_box,ssd_300_vgg/block8_box,ssd_300_vgg/block9_box,ssd_300_vgg/block10_box,ssd_300_vgg/block11_box
+# --save_summaries_secs=60
+# --save_interval_secs=600
+# --weight_decay=0.0005
+# --optimizer=rmsprop
+# --learning_rate=0.0001
+# --batch_size=32
