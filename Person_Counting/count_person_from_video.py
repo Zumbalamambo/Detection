@@ -8,14 +8,17 @@ slim = tf.contrib.slim
 
 import sys
 sys.path.append('../SSD/')
+sys.path.append('../sort/')
 
 from SSD.nets import ssd_vgg_512, np_methods
 from SSD.preprocessing import ssd_vgg_preprocessing
 
+from sort import sort       # for tracking
+
 sess = tf.Session()
 
-net_shape = (512, 1024)     # from origin (1080, 1960)
-data_format = 'NCHW'
+net_shape = (512, 1024)     # from origin (1080, 1960), for 512 or 300 SSD
+data_format = 'NCHW'        # for GPU
 img_input = tf.placeholder(tf.uint8, shape=(None, None, 3))
 image_pre, labels_pre, bboxes_pre, bbox_img = ssd_vgg_preprocessing.preprocess_for_eval(
     img_input, None, None, net_shape, data_format, resize=ssd_vgg_preprocessing.Resize.WARP_RESIZE)
@@ -51,40 +54,59 @@ def process_image(img, select_threshold=0.5, nms_threshold=.45, net_shape=(300, 
     return rclasses, rscores, rbboxes
 
 # video clip
-date = '20170304'   # sat
-# date = '20170310'   # fri
-n_frame_per_min = 510
-pesn_cntr_list = []
-for hour in np.arange(10,22):
-    for minute in np.arange(60):
-        print("loading ../datasets/TongYing/{}/{:02d}/{:02d}.mp4".format(date, hour, minute))
-        cap = cv2.VideoCapture('../datasets/TongYing/{}/{:02d}/{:02d}.mp4'.format(date, hour, minute))
+date = '20170304'       # sat
+# date = '20170310'       # fri
+cam_pose = 'side'       # 'side' or 'front'
+# total_pcount_each_minute = np.zeros((12, 60), dtype=np.int32)       # 12 hours from 10am to 22pm
+total_pcount_each_minute = np.zeros((1, 5), dtype=np.int32)       # 12 hours from 10am to 22pm
 
-        pesn_cntr_list_per_min = []
+# prepare id tracker
+mot_tracker = sort.Sort(max_age=10, min_hits=1)
+
+# for hour in np.arange(10,22):
+for hour in np.arange(12,13):
+    # for minute in np.arange(60):
+    for minute in np.arange(2, 3):
+        print("loading ../datasets/TongYing/{}/{}/{:02d}/{:02d}.mp4".format(cam_pose, date, hour, minute))
+        cap = cv2.VideoCapture('../datasets/TongYing/{}/{}/{:02d}/{:02d}.mp4'.format(cam_pose, date, hour, minute))
+
         while (cap.isOpened()):
             ret, frame = cap.read()
+            # if mot_tracker.frame_count == 475:
+            #     pass
             if ret:
                 # resize
                 img = cv2.resize(frame, net_shape[::-1], interpolation=cv2.INTER_CUBIC)
                 start = time.time()
                 rclasses, rscores, rbboxes = process_image(img, net_shape=net_shape)
                 end = time.time()
-                # print('time elapsed to process one {} img: {}'.format(net_shape, end-start))
-                person_counter = 0
-                for cls_index in rclasses:
-                    if cls_index == 15:
-                        person_counter += 1
-                pesn_cntr_list_per_min.append(person_counter)
+                # # debug
+                # print('Time elapsed to process one {} img: {:.03f} sec'.format(net_shape, end-start))
+
+                person_select_indicator = (rclasses == 15)  # pedestrians only
+                rclasses = rclasses[person_select_indicator]
+                rscores = rscores[person_select_indicator]      # confidence
+                rbboxes = rbboxes[person_select_indicator]
+
+                if rbboxes.__len__() == 0:
+                    # execute update for tracking even if nothing was detected
+                    mot_tracker.update([])
+                    print('No dets!!')
+                else:
+                    mot_tracker.update(np.hstack((rbboxes, rscores[:, np.newaxis])))
             else:
+                # still need update tracker for Kalman filter estimation
+                mot_tracker.update([])
+                print('Break out')      # debug
                 break
-        if pesn_cntr_list_per_min.__len__() > n_frame_per_min:
-            # cut to 510 frames
-            pesn_cntr_list_per_min = pesn_cntr_list_per_min[0:n_frame_per_min]
-        else:
-            pesn_cntr_list_per_min = pesn_cntr_list_per_min + [0] * (n_frame_per_min - pesn_cntr_list_per_min.__len__())
-        pesn_cntr_list.append(pesn_cntr_list_per_min)
+            # debug
+            print('Frame #: {}'.format(mot_tracker.frame_count))
+            print('Tracker count: {}'.format(mot_tracker.trackers[0].count))
+        # update when all frames in one minute have been scanned
+        # total_pcount_each_minute[hour - 10][minute] = mot_tracker.trackers[0].count
+        total_pcount_each_minute[0][minute] = mot_tracker.trackers[0].count
 
 cap.release()
 cv2.destroyAllWindows()
 
-np.savetxt('outputs/person_counter_{}.txt'.format(date), np.array(pesn_cntr_list), fmt='%d', delimiter=',')
+np.savetxt('outputs/id_accumulated_counter_{}.txt'.format(date), np.array(total_pcount_each_minute), fmt='%d', delimiter=',')

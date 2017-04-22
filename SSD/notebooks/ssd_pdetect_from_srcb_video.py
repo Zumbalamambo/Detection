@@ -12,12 +12,13 @@ sys.path.append('../')
 import time
 import os
 
-from nets import ssd_vgg_512, np_methods
+from nets import ssd_vgg_300, ssd_vgg_512, np_methods
 from preprocessing import ssd_vgg_preprocessing
 
 sess = tf.Session()
 
-net_shape = (512, 1024)     # from origin (960, 1920), 1_er_1920x960.MP4
+# net_shape = (512, 1024)
+net_shape = (600, 1200)
 data_format = 'NCHW'    # GPU run
 # data_format = 'NHWC'    # CPU BiasOp only supports NHWC
 img_input = tf.placeholder(tf.uint8, shape=(None, None, 3))
@@ -26,11 +27,14 @@ image_pre, labels_pre, bboxes_pre, bbox_img = ssd_vgg_preprocessing.preprocess_f
 image_4d = tf.expand_dims(image_pre, 0)
 
 reuse = True if 'ssd_net' in locals() else None
-ssd_net = ssd_vgg_512.SSDNet()
+ssd_net = ssd_vgg_300.SSDNet()
+# ssd_net = ssd_vgg_512.SSDNet()
 with slim.arg_scope(ssd_net.arg_scope(data_format=data_format)):
     predictions, localisations, _, _ = ssd_net.net(image_4d, is_training=False, reuse=reuse)
 
-ckpt_filename = '../checkpoints/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt'
+# ckpt_filename = '../checkpoints/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt'
+# # to test self trained model
+ckpt_filename = '../logs/'
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 saver.restore(sess, ckpt_filename)

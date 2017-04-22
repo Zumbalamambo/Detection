@@ -15,7 +15,7 @@ import os
 
 from nets import ssd_vgg_300, ssd_vgg_512, np_methods
 from preprocessing import ssd_vgg_preprocessing
-from sort import Sort
+from notebooks import sort
 
 sess = tf.Session()
 
