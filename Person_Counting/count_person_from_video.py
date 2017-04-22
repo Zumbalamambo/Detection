@@ -4,6 +4,9 @@ import time
 import numpy as np
 import tensorflow as tf
 
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.4)
+sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+
 slim = tf.contrib.slim
 
 import sys
@@ -57,23 +60,18 @@ def process_image(img, select_threshold=0.5, nms_threshold=.45, net_shape=(300, 
 date = '20170304'       # sat
 # date = '20170310'       # fri
 cam_pose = 'side'       # 'side' or 'front'
-# total_pcount_each_minute = np.zeros((12, 60), dtype=np.int32)       # 12 hours from 10am to 22pm
-total_pcount_each_minute = np.zeros((1, 5), dtype=np.int32)       # 12 hours from 10am to 22pm
+total_pcount_each_minute = np.zeros((12, 60), dtype=np.int32)       # 12 hours from 10am to 22pm
 
 # prepare id tracker
 mot_tracker = sort.Sort(max_age=10, min_hits=1)
 
-# for hour in np.arange(10,22):
-for hour in np.arange(12,13):
-    # for minute in np.arange(60):
-    for minute in np.arange(2, 3):
+for hour in np.arange(10,22):
+    for minute in np.arange(60):
         print("loading ../datasets/TongYing/{}/{}/{:02d}/{:02d}.mp4".format(cam_pose, date, hour, minute))
         cap = cv2.VideoCapture('../datasets/TongYing/{}/{}/{:02d}/{:02d}.mp4'.format(cam_pose, date, hour, minute))
 
         while (cap.isOpened()):
             ret, frame = cap.read()
-            # if mot_tracker.frame_count == 475:
-            #     pass
             if ret:
                 # resize
                 img = cv2.resize(frame, net_shape[::-1], interpolation=cv2.INTER_CUBIC)
@@ -88,23 +86,12 @@ for hour in np.arange(12,13):
                 rscores = rscores[person_select_indicator]      # confidence
                 rbboxes = rbboxes[person_select_indicator]
 
-                if rbboxes.__len__() == 0:
-                    # execute update for tracking even if nothing was detected
-                    mot_tracker.update([])
-                    print('No dets!!')
-                else:
+                if rbboxes.__len__() > 0:
                     mot_tracker.update(np.hstack((rbboxes, rscores[:, np.newaxis])))
             else:
-                # still need update tracker for Kalman filter estimation
-                mot_tracker.update([])
-                print('Break out')      # debug
                 break
-            # debug
-            print('Frame #: {}'.format(mot_tracker.frame_count))
-            print('Tracker count: {}'.format(mot_tracker.trackers[0].count))
         # update when all frames in one minute have been scanned
-        # total_pcount_each_minute[hour - 10][minute] = mot_tracker.trackers[0].count
-        total_pcount_each_minute[0][minute] = mot_tracker.trackers[0].count
+        total_pcount_each_minute[hour - 10][minute] = mot_tracker.trackers[0].count
 
 cap.release()
 cv2.destroyAllWindows()
