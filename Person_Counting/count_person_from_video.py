@@ -4,19 +4,19 @@ import time
 import numpy as np
 import tensorflow as tf
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.4)
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
 slim = tf.contrib.slim
 
 import sys
-sys.path.append('../SSD/')
-sys.path.append('../sort/')
+sys.path.append('../SSD')
+sys.path.append('..')
 
 from SSD.nets import ssd_vgg_512, np_methods
 from SSD.preprocessing import ssd_vgg_preprocessing
 
-from sort import sort       # for tracking
+from sort.sort import Sort       # for tracking
 
 sess = tf.Session()
 
@@ -57,13 +57,14 @@ def process_image(img, select_threshold=0.5, nms_threshold=.45, net_shape=(300, 
     return rclasses, rscores, rbboxes
 
 # video clip
-date = '20170304'       # sat - side
+# date = '20170304'       # sat - side
 # date = '20170310'       # fri - front
+date = '20170419'       # fri - front
 cam_pose = 'side'       # 'side' or 'front'
 total_pcount_each_minute = np.zeros((12, 60), dtype=np.int32)       # 12 hours from 10am to 22pm
 
 # prepare id tracker
-mot_tracker = sort.Sort(max_age=10, min_hits=3)
+mot_tracker = Sort(max_age=10, min_hits=3)
 
 for hour in np.arange(10,22):
     for minute in np.arange(60):
