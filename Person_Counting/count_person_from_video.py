@@ -57,13 +57,13 @@ def process_image(img, select_threshold=0.5, nms_threshold=.45, net_shape=(300, 
     return rclasses, rscores, rbboxes
 
 # video clip
-date = '20170304'       # sat
-# date = '20170310'       # fri
+date = '20170304'       # sat - side
+# date = '20170310'       # fri - front
 cam_pose = 'side'       # 'side' or 'front'
 total_pcount_each_minute = np.zeros((12, 60), dtype=np.int32)       # 12 hours from 10am to 22pm
 
 # prepare id tracker
-mot_tracker = sort.Sort(max_age=10, min_hits=1)
+mot_tracker = sort.Sort(max_age=10, min_hits=3)
 
 for hour in np.arange(10,22):
     for minute in np.arange(60):
@@ -96,4 +96,4 @@ for hour in np.arange(10,22):
 cap.release()
 cv2.destroyAllWindows()
 
-np.savetxt('outputs/id_accumulated_counter_{}.txt'.format(date), np.array(total_pcount_each_minute), fmt='%d', delimiter=',')
+np.savetxt('outputs/id_accumulated_counter_{}_SSD512x1024_sort_ma10_mh3.txt'.format(date), np.array(total_pcount_each_minute), fmt='%d', delimiter=',')
