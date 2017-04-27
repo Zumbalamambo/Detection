@@ -2,9 +2,10 @@ import cv2
 
 import time
 import numpy as np
+import os
 import tensorflow as tf
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.4)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
 slim = tf.contrib.slim
@@ -59,8 +60,9 @@ def process_image(img, select_threshold=0.5, nms_threshold=.45, net_shape=(300, 
 # video clip
 # date = '20170304'       # sat - side
 # date = '20170310'       # fri - front
-date = '20170419'       # fri - front
-cam_pose = 'side'       # 'side' or 'front'
+# date = '20170419'       # fri - front
+date = '20170420'       # sat
+cam_pose = 'front'      # 'side' or 'front'
 total_pcount_each_minute = np.zeros((12, 60), dtype=np.int32)       # 12 hours from 10am to 22pm
 
 # prepare id tracker
@@ -71,14 +73,16 @@ for hour in np.arange(10,22):
         print("loading ../datasets/TongYing/{}/{}/{:02d}/{:02d}.mp4".format(cam_pose, date, hour, minute))
         cap = cv2.VideoCapture('../datasets/TongYing/{}/{}/{:02d}/{:02d}.mp4'.format(cam_pose, date, hour, minute))
 
+        mot_tracker.update([])      # just in case the first file does not exist
+
         while (cap.isOpened()):
             ret, frame = cap.read()
             if ret:
                 # resize
                 img = cv2.resize(frame, net_shape[::-1], interpolation=cv2.INTER_CUBIC)
-                start = time.time()
+                # start = time.time()
                 rclasses, rscores, rbboxes = process_image(img, net_shape=net_shape)
-                end = time.time()
+                # end = time.time()
                 # # debug
                 # print('Time elapsed to process one {} img: {:.03f} sec'.format(net_shape, end-start))
 
@@ -92,9 +96,10 @@ for hour in np.arange(10,22):
             else:
                 break
         # update when all frames in one minute have been scanned
-        total_pcount_each_minute[hour - 10][minute] = mot_tracker.trackers[0].count
+        if mot_tracker.trackers.__len__() > 0:
+            total_pcount_each_minute[hour - 10][minute] = mot_tracker.trackers[0].count
 
 cap.release()
 cv2.destroyAllWindows()
 
-np.savetxt('outputs/id_accumulated_counter_{}_SSD512x1024_sort_ma10_mh3.txt'.format(date), np.array(total_pcount_each_minute), fmt='%d', delimiter=',')
+np.savetxt('outputs/id_accumulated_counter_{}_{}_SSD512x1024_sort_ma10_mh3.txt'.format(date, cam_pose), np.array(total_pcount_each_minute), fmt='%d', delimiter=',')
