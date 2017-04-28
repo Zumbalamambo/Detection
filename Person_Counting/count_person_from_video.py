@@ -5,7 +5,7 @@ import numpy as np
 import os
 import tensorflow as tf
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.4)
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.7)
 sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
 slim = tf.contrib.slim
@@ -58,10 +58,7 @@ def process_image(img, select_threshold=0.5, nms_threshold=.45, net_shape=(300, 
     return rclasses, rscores, rbboxes
 
 # video clip
-# date = '20170304'       # sat - side
-# date = '20170310'       # fri - front
-# date = '20170419'       # fri - front
-date = '20170420'       # sat
+date = '20170415'       # sat
 cam_pose = 'front'      # 'side' or 'front'
 total_pcount_each_minute = np.zeros((12, 60), dtype=np.int32)       # 12 hours from 10am to 22pm
 
