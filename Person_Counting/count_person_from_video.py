@@ -66,8 +66,14 @@ if __name__ == '__main__':
     parser.add_argument('--date', help="input the date of the video clips to be analyzed")
     parser.add_argument('--campose', choices={'front', 'side'}, help="signify front or side cam to be analyzed")
     args = parser.parse_args()
+
+    if len(sys.argv)==1:
+        # display help message when no args are passed.
+        parser.print_help()
+        sys.exit(1)
+
     if args.date is None or args.campose is None:
-        raise argparse.ArgumentTypeError('Please specify the date and campose for video clips first!')
+        raise argparse.ArgumentTypeError('Please specify the date and camera pose for video clips first!')
     else:
         date = args.date
         cam_pose = args.campose
