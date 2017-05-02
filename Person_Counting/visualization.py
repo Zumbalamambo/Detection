@@ -4,7 +4,7 @@ from matplotlib import dates
 import datetime
 from smoother import smooth
 
-date = '20170416'
+date = '20170417'
 id_count_front = np.loadtxt('./outputs/id_accumulated_counter_{}_front_SSD512x1024_sort_ma10_mh3.txt'.format(date),
                             dtype=np.int32, delimiter=',')
 id_count_side = np.loadtxt('./outputs/id_accumulated_counter_{}_side_SSD512x1024_sort_ma10_mh3.txt'.format(date),
@@ -15,6 +15,9 @@ id_count_side_flat = id_count_side.ravel()
 
 id_count_per_min_front = np.append(id_count_front_flat[0], np.diff(id_count_front_flat))
 id_count_per_min_side = np.append(id_count_side_flat[0], np.diff(id_count_side_flat))
+# none negative, due to camera turn-off
+id_count_per_min_front[id_count_per_min_front < 0] = 0
+id_count_per_min_side[id_count_per_min_side < 0] = 0
 
 # smoothing count per minute
 window_len_half = 5
